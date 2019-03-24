@@ -338,7 +338,6 @@ void display(int windowWidth, int windowHeight)
 
 		//set teapot matrices
 		view = camera.viewMat();
-		
 		view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
 		model = glm::mat4(1.0f);
 		model = glm::translate(model,glm::vec3(0.0f,-0.5f,0.0f));
@@ -477,12 +476,19 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 
 		
 		std::vector<const GLchar *> faces;
+		faces.push_back("../../data/images/blood_posx.jpg");
+		faces.push_back("../../data/images/blood_negx.jpg");
+		faces.push_back("../../data/images/blood_posy.jpg");
+		faces.push_back("../../data/images/blood_negy.jpg");
+		faces.push_back("../../data/images/blood_posz.jpg");
+		faces.push_back("../../data/images/blood_negz.jpg");
+		/*
 		faces.push_back("../../data/images/posx.jpg");
 		faces.push_back("../../data/images/negx.jpg");
 		faces.push_back("../../data/images/posy.jpg");
 		faces.push_back("../../data/images/negy.jpg");
 		faces.push_back("../../data/images/posz.jpg");
-		faces.push_back("../../data/images/negz.jpg");
+		faces.push_back("../../data/images/negz.jpg");*/
 
 		for (GLuint i = 0; i < faces.size();i++) {
 			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
