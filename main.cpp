@@ -16,6 +16,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <AntTweakBar.h>
+#include <stdio.h>
 #include "Shader.h"
 #include "Camera.h"
 #include "Geometry.h"
@@ -351,6 +353,9 @@ void display(int windowWidth, int windowHeight)
 
 		glDepthMask(GL_LESS);
 
+		// AntTweak window spawning (should be done before swapping buffers)
+		//TwDraw();
+
 	//----------------------------------------------
 }
 
@@ -601,6 +606,39 @@ int main()
 	SetSoilCapabilties();
 
 
+	//AntTweak initialization
+	TwInit(TW_OPENGL_CORE, NULL);
+	// TwWindowSize(windowLength,windowHeight);
+	TwWindowSize(500, 500);
+
+	//AntTweak ui maker
+	TwBar *myBar;
+	myBar = TwNewBar("SceneEditor");
+
+	//Test variables
+	unsigned char teapotColor[] = { 200, 200, 200, 255 };
+
+	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
+	TwDefine(" SceneEditor position = '500, 100' ");
+	//TwDefine(" SceneEditor size='200 400' color='96 216 224' "); // change default tweak bar size and color
+
+	TwAddVarRW(myBar, "teapotColor", TW_TYPE_COLOR32, &teapotColor,
+		" label='Teapot color' alpha help='Color and transparency of the Teapot.' ");
+
+	//glfwSetWindowTitle(window, "AntTweakBar simple example using GLFW");
+
+	// Set GLFW event callbacks
+	// - Directly redirect GLFW mouse button events to AntTweakBar
+	//glfwSetMouseButtonCallback((GLFWmousebuttonfun)TwEventMouseButtonGLFW);
+	// - Directly redirect GLFW mouse position events to AntTweakBar
+	//glfwSetCursorPosCallback(window, (GLFWmouseposfun)TwEventMousePosGLFW);
+	// - Directly redirect GLFW mouse wheel events to AntTweakBar
+	//glfwSetMouseWheelCallback((GLFWmousewheelfun)TwEventMouseWheelGLFW);
+	// - Directly redirect GLFW key events to AntTweakBar
+	//glfwSetKeyCallback((GLFWkeyfun)TwEventKeyGLFW);
+	// - Directly redirect GLFW char events to AntTweakBar
+	//glfwSetCharCallback((GLFWcharfun)TwEventCharGLFW);
+
 	// Init OpenGL geometry and buffers
 	init();
 
@@ -617,6 +655,9 @@ int main()
 
 		// draw
 		display(widthBuff, heightBuff);
+
+		// draw the AntTweak window
+		TwDraw();
 
 		// swap buffers
 		glfwSwapBuffers(window);
@@ -639,6 +680,9 @@ int main()
 
 	// end process
 	glfwTerminate();
+
+	// terminate AntTweaker
+	TwTerminate();
 
 	// return
 	return 0;
