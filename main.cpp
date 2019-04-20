@@ -28,9 +28,9 @@
 // Gemoetry (Teapot and Skybox)
 //----------------------------------------------
 //  Global VAO objects: the list of vertex array objects
-enum VAO_IDs { Skybox, Teapot, NumVAOs };
+enum VAO_IDs { Skybox, Astronaut, NumVAOs };
 GLuint  VAOs[NumVAOs];
-Geometry teapot;
+Geometry astronaut;
 
 
 
@@ -142,8 +142,8 @@ void init()
 		VAOs[Skybox] = GenerateCubeVAO(0);
 		
 		//initialize the teapot
-		glGenVertexArrays(1, &VAOs[Teapot]);
-		teapot.Initialize("../../data/models/teapot.obj", VAOs[Teapot]);
+		glGenVertexArrays(1, &VAOs[Astronaut]);
+		astronaut.Initialize("../../data/models/teapot.obj", VAOs[Astronaut]);
 
 		
 
@@ -255,9 +255,15 @@ void display(int windowWidth, int windowHeight)
     float ratio = (float)windowHeight/windowWidth;
     
 	// sets up the camera projection matrices
-    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -ratio, ratio, -1.0f, 1.0f);
+    //glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -ratio, ratio, -1.0f, 1.0f);
     glm::mat4 rotation = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 1.0, 0.0));
    
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (float)windowLength / (float)windowHeight, 0.1f, 1000.0f);
+	//glm::mat4 view = glm::mat4(1.0f) *rotation;
+	glm::mat4 model = glm::mat4(1.0f);
+
+
 	// prints camera projection matricies to the command window
 	// as the program runs
     for (int i = 0; i < 4; i++) {
@@ -289,15 +295,55 @@ void display(int windowWidth, int windowHeight)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		
-		
-		
-		glm::mat4 view = camera.viewMat();
-		glm::mat4 model = glm::mat4(1.0f);
+		//view = view*camera.viewMat();
+		//glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 projection_alt = glm::perspective(camera.zoomfactor, (float)windowWidth / (float)windowHeight, 0.1f, 1000.0f);
+		
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ASTRONAUT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
-		
-		
+		//Draw Astronaut with shader class
+		refShader.Use();
+
+		//Grab locations of teapot attributes
+		GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
+		glEnableVertexAttribArray(vertex);
+		glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		GLuint normal = glGetAttribLocation(refShader.Program, "normal");
+		glEnableVertexAttribArray(normal);
+		glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
+		glEnableVertexAttribArray(cameraPosition);
+		glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		GLuint lightPosition = glGetAttribLocation(refShader.Program, "light_position");
+		glEnableVertexAttribArray(lightPosition);
+		glVertexAttribPointer(lightPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		GLuint lightPosition2 = glGetAttribLocation(refShader.Program, "light_position2");
+		glEnableVertexAttribArray(lightPosition2);
+		glVertexAttribPointer(lightPosition2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+		//set teapot matrices
+
+		view = camera.viewMat();
+		//view = glm::translate(view, glm::vec3(0.0f,-1.0f,-3.0f));
+		//view = view * rotation;
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0f));
+		glm::vec3 light_position = glm::vec3(0.0f, 300.0f, -300.0f);
+		glm::vec3 light_position2 = glm::vec3(0.0f, 300.0f, -300.0f);
+
+		refShader.setMat4("projection", projection);
+		refShader.setMat4("view", view*rotation);
+		refShader.setMat4("model", model);
+		refShader.setVec3("cameraPosition", camera.pos);
+		refShader.setVec3("light_position", light_position);
+		refShader.setVec3("light_position2", light_position2);
+
+		astronaut.Draw(vertex, normal);
+		glBindVertexArray(0);
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  SKYBOX  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		envShader.Use();
@@ -308,9 +354,12 @@ void display(int windowWidth, int windowHeight)
 		glVertexAttribPointer(cubeMapPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 		//set skybox matrices
-		envShader.setMat4("projection", projection_alt);
+		view = glm::mat4(camera.viewMat());
+		model = glm::mat4(1.0f);
+		model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
+		envShader.setMat4("projection", projection);
 		envShader.setMat4("view", view);
-		envShader.setMat4("model", rotation);
+		envShader.setMat4("model", model*rotation);
 		
 
 		//Set up textures
@@ -319,34 +368,8 @@ void display(int windowWidth, int windowHeight)
 		glBindTexture(GL_TEXTURE_CUBE_MAP, Textures[SkyboxTexture]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-		//glDepthMask(GL_LESS);
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		//Draw Teapot with shader class
-		//glDepthFunc(GL_LEQUAL);
-		refShader.Use();
 
-		//Grab locations of teapot attributes
-		GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
-		glEnableVertexAttribArray(vertex);
-		glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint normal = glGetAttribLocation(refShader.Program, "normal");
-		glEnableVertexAttribArray(normal);
-		glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
-		glEnableVertexAttribArray(cameraPosition);
-		glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-		//set teapot matrices
-		view = camera.viewMat();
-		view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
-		model = glm::mat4(1.0f);
-		model = glm::translate(model,glm::vec3(0.0f,-0.5f,0.0f));
-		refShader.setMat4("projection", projection_alt);
-		refShader.setMat4("view", view*rotation);
-		refShader.setMat4("model", model);
-		refShader.setVec3("cameraPosition", camera.pos);
-		teapot.Draw(vertex, normal);
-		glBindVertexArray(0);
+		
 
 		glDepthMask(GL_LESS);
 
@@ -476,19 +499,20 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 
 		
 		std::vector<const GLchar *> faces;
-		faces.push_back("../../data/images/blood_posx.jpg");
+		/*faces.push_back("../../data/images/blood_posx.jpg");
 		faces.push_back("../../data/images/blood_negx.jpg");
 		faces.push_back("../../data/images/blood_posy.jpg");
 		faces.push_back("../../data/images/blood_negy.jpg");
 		faces.push_back("../../data/images/blood_posz.jpg");
-		faces.push_back("../../data/images/blood_negz.jpg");
-		/*
+		faces.push_back("../../data/images/blood_negz.jpg");*/
+		
+		
 		faces.push_back("../../data/images/posx.jpg");
 		faces.push_back("../../data/images/negx.jpg");
 		faces.push_back("../../data/images/posy.jpg");
 		faces.push_back("../../data/images/negy.jpg");
 		faces.push_back("../../data/images/posz.jpg");
-		faces.push_back("../../data/images/negz.jpg");*/
+		faces.push_back("../../data/images/negz.jpg");
 
 		for (GLuint i = 0; i < faces.size();i++) {
 			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
@@ -497,16 +521,7 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 			SOIL_free_image_data(image);
 		}
 		
-		/*textureId = SOIL_load_OGL_cubemap(
-		posx,
-		negx,
-		posy,
-		negy,
-		posz,
-		negz,
-		0,
-		0,
-		SOIL_FLAG_MIPMAPS);*/
+		
 		
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		return textureID;
@@ -660,6 +675,7 @@ int main()
 //https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330
 //https://open.gl/textures
 //https://stackoverflow.com/questions/15735837/textures-not-displaying-correctly-c-opengl-soil
+//http://in2gpu.com/2014/06/23/toon-shading-effect-and-simple-contour-detection/
 
 
 
