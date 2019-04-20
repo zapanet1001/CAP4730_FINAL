@@ -10,6 +10,8 @@
 
 in vec3 pos_out;
 in vec3 norm_out;
+//in vec3 light_vec;
+//in vec3 halfway_vec;
 
 uniform samplerCube skybox;
 uniform vec3 cameraPosition;
@@ -26,6 +28,7 @@ vec3 diffuseColoring = vec3(1.0,0.0,1.0);
 
 void main()
 {
+
 	//VECTORS
 	vec3 normal = normalize(norm_out);
 	vec3 incident_ray = normalize(cameraPosition-pos_out );
@@ -70,5 +73,6 @@ void main()
 	color = edgeDetection * (color + reflect_Color);
 
     FragColor  = vec4(color,1.0);
+
 }
 //-----------------------------------------------------------------------
