@@ -320,7 +320,7 @@ void display(int windowWidth, int windowHeight)
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	//glDepthMask(GL_LESS);
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  astronaut ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//Draw Teapot with shader class
 	//glDepthFunc(GL_LEQUAL);
 	refShader.Use();
@@ -344,7 +344,9 @@ void display(int windowWidth, int windowHeight)
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, -1.5, 0.0f));
-	glm::vec3 light_position = glm::vec3(200.0f, 200.0f, -300.0f);
+	
+	
+	glm::vec3 light_position = glm::vec3(-200.0f, 200.0f, -300.0f);
 	glm::vec3 camRot = glm::vec3(camX, 0.0, camZ);
 	refShader.setMat4("projection", projection_alt);
 	refShader.setMat4("view", view*rotation);
@@ -482,19 +484,20 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 
 
 	std::vector<const GLchar *> faces;
-	/*faces.push_back("../../data/images/blood_posx.jpg");
+	faces.push_back("../../data/images/blood_posx.jpg");
 	faces.push_back("../../data/images/blood_negx.jpg");
 	faces.push_back("../../data/images/blood_posy.jpg");
 	faces.push_back("../../data/images/blood_negy.jpg");
 	faces.push_back("../../data/images/blood_posz.jpg");
-	faces.push_back("../../data/images/blood_negz.jpg");*/
+	faces.push_back("../../data/images/blood_negz.jpg");
+
 	
-	faces.push_back("../../data/images/posx.jpg");
+	/*faces.push_back("../../data/images/posx.jpg");
 	faces.push_back("../../data/images/negx.jpg");
 	faces.push_back("../../data/images/posy.jpg");
 	faces.push_back("../../data/images/negy.jpg");
 	faces.push_back("../../data/images/posz.jpg");
-	faces.push_back("../../data/images/negz.jpg");
+	faces.push_back("../../data/images/negz.jpg");*/
 
 	for (GLuint i = 0; i < faces.size(); i++) {
 		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
