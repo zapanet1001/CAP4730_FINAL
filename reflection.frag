@@ -214,3 +214,13 @@ void main()
 
 }
 //-----------------------------------------------------------------------
+
+//SOURCES
+//	Hue -> RGB calculations
+//	https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glGetTexImage.xml
+//	GLSL Visual Studio Support
+//	https://marketplace.visualstudio.com/items?itemName=DanielScherzer.GLSL
+//	Understanding Uniform Variables
+//	https://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/uniform.php
+//	Passing color values to shaderMode
+//	http://www.lighthouse3d.com/tutorials/glsl-tutorial/color-example/
