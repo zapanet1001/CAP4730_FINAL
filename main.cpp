@@ -51,7 +51,7 @@ GLuint GenerateCubeVAO(GLuint VAO);
 // type data in a buffer.
 //----------------------------------------------
 // ID for vertex position: vPosition, ID for normals: vNormal
-enum Attrib_IDs { vPosition = 0, vNormal = 1};
+enum Attrib_IDs { vPosition = 0, vNormal = 1 };
 
 
 
@@ -122,9 +122,9 @@ void display(int windowWidth, int windowHeight);
 //----------------------------------------------
 void init()
 {
-    glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 
-    // TO DO: Set up cubemap
+	// TO DO: Set up cubemap
 	// 1. use glGenTextures to get a set of texture names
 	// 2. call GenerateCubeMapTexture to create the cubemap
 	// 3. now set-up the geometry for the skybox using GenerateCubeVAO
@@ -133,24 +133,24 @@ void init()
 
 		//get set of texture names
 		//create cubemap
-		Textures[SkyboxTexture] = GenerateCubeMapTexture(0);
+	Textures[SkyboxTexture] = GenerateCubeMapTexture(0);
 
 
-		//set up geometry for skybox
-		//GLuint VAO;
-		glGenVertexArrays(1, &VAOs[Skybox]);
-		VAOs[Skybox] = GenerateCubeVAO(0);
-		
-		//initialize the teapot
-		glGenVertexArrays(1, &VAOs[Teapot]);
-		teapot.Initialize("../../data/models/teapot.obj", VAOs[Teapot]);
+	//set up geometry for skybox
+	//GLuint VAO;
+	glGenVertexArrays(1, &VAOs[Skybox]);
+	VAOs[Skybox] = GenerateCubeVAO(0);
 
-		
+	//initialize the teapot
+	glGenVertexArrays(1, &VAOs[Teapot]);
+	teapot.Initialize("../../data/models/teapot.obj", VAOs[Teapot]);
+
+
 
 
 	//----------------------------------------------------
 
-    glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LEQUAL);
 
 }
 
@@ -169,69 +169,69 @@ GLuint GenerateCubeVAO(GLuint VAO) {
 	//   glBufferData, glVertexAttribPointer, glEnableVertexAttribArray
 	//--------------------------------------------------
 
-		GLuint vao;
-		//intialize vertices
-		float vertices[] = {
-			-10.0f,  10.0f, -10.0f,
-			-10.0f, -10.0f, -10.0f,
-			10.0f, -10.0f, -10.0f,
-			10.0f, -10.0f, -10.0f,
-			10.0f,  10.0f, -10.0f,
-			-10.0f,  10.0f, -10.0f,
-			
-			-10.0f, -10.0f,  10.0f,
-			-10.0f, -10.0f, -10.0f,
-			-10.0f,  10.0f, -10.0f,
-			-10.0f,  10.0f, -10.0f,
-			-10.0f,  10.0f,  10.0f,
-			-10.0f, -10.0f,  10.0f,
-			
-			10.0f, -10.0f, -10.0f,
-			10.0f, -10.0f,  10.0f,
-			10.0f,  10.0f,  10.0f,
-			10.0f,  10.0f,  10.0f,
-			10.0f,  10.0f, -10.0f,
-			10.0f, -10.0f, -10.0f,
-			
-			-10.0f, -10.0f,  10.0f,
-			-10.0f,  10.0f,  10.0f,
-			10.0f,  10.0f,  10.0f,
-			10.0f,  10.0f,  10.0f,
-			10.0f, -10.0f,  10.0f,
-			-10.0f, -10.0f,  10.0f,
-			
-			-10.0f,  10.0f, -10.0f,
-			10.0f,  10.0f, -10.0f,
-			10.0f,  10.0f,  10.0f,
-			10.0f,  10.0f,  10.0f,
-			-10.0f,  10.0f,  10.0f,
-			-10.0f,  10.0f, -10.0f,
-			
-			-10.0f, -10.0f, -10.0f,
-			-10.0f, -10.0f,  10.0f,
-			10.0f, -10.0f, -10.0f,
-			10.0f, -10.0f, -10.0f,
-			-10.0f, -10.0f,  10.0f,
-			10.0f, -10.0f,  10.0f
-		};
+	GLuint vao;
+	//intialize vertices
+	float vertices[] = {
+		-10.0f,  10.0f, -10.0f,
+		-10.0f, -10.0f, -10.0f,
+		10.0f, -10.0f, -10.0f,
+		10.0f, -10.0f, -10.0f,
+		10.0f,  10.0f, -10.0f,
+		-10.0f,  10.0f, -10.0f,
 
-		//Bind vertex array
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		-10.0f, -10.0f,  10.0f,
+		-10.0f, -10.0f, -10.0f,
+		-10.0f,  10.0f, -10.0f,
+		-10.0f,  10.0f, -10.0f,
+		-10.0f,  10.0f,  10.0f,
+		-10.0f, -10.0f,  10.0f,
 
-		//Create a buffer for the cube vertices and bind it
-		GLuint VBO;
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		10.0f, -10.0f, -10.0f,
+		10.0f, -10.0f,  10.0f,
+		10.0f,  10.0f,  10.0f,
+		10.0f,  10.0f,  10.0f,
+		10.0f,  10.0f, -10.0f,
+		10.0f, -10.0f, -10.0f,
 
-		//Fill buffer with position data
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), (GLvoid *) 0);
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER,0);
-		return vao;
-		
+		-10.0f, -10.0f,  10.0f,
+		-10.0f,  10.0f,  10.0f,
+		10.0f,  10.0f,  10.0f,
+		10.0f,  10.0f,  10.0f,
+		10.0f, -10.0f,  10.0f,
+		-10.0f, -10.0f,  10.0f,
+
+		-10.0f,  10.0f, -10.0f,
+		10.0f,  10.0f, -10.0f,
+		10.0f,  10.0f,  10.0f,
+		10.0f,  10.0f,  10.0f,
+		-10.0f,  10.0f,  10.0f,
+		-10.0f,  10.0f, -10.0f,
+
+		-10.0f, -10.0f, -10.0f,
+		-10.0f, -10.0f,  10.0f,
+		10.0f, -10.0f, -10.0f,
+		10.0f, -10.0f, -10.0f,
+		-10.0f, -10.0f,  10.0f,
+		10.0f, -10.0f,  10.0f
+	};
+
+	//Bind vertex array
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	//Create a buffer for the cube vertices and bind it
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	//Fill buffer with position data
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return vao;
+
 	//---------------------------------------------------------------
 }
 
@@ -245,29 +245,29 @@ void display(int windowWidth, int windowHeight)
 
 	// Create  two shaders by initializing the 
 	// Shader obects with a path to shaders.
-    static Shader envShader("./Shaders/environment.vert", "./Shaders/environment.frag");
-    static Shader refShader("./Shaders/reflection.vert", "./Shaders/reflection.frag");
+	static Shader envShader("./Shaders/environment.vert", "./Shaders/environment.frag");
+	static Shader refShader("./Shaders/reflection.vert", "./Shaders/reflection.frag");
 
-    
+
 	// sets up the camera motion
-    float camX = cos(.1*glfwGetTime());
-    float camZ = sin(.1*glfwGetTime());
-    float ratio = (float)windowHeight/windowWidth;
-    
+	float camX = cos(.1*glfwGetTime());
+	float camZ = sin(.1*glfwGetTime());
+	float ratio = (float)windowHeight / windowWidth;
+
 	// sets up the camera projection matrices
-    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -ratio, ratio, -1.0f, 1.0f);
-    glm::mat4 rotation = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 1.0, 0.0));
-   
+	glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -ratio, ratio, -1.0f, 1.0f);
+	glm::mat4 rotation = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 1.0, 0.0));
+
 	// prints camera projection matricies to the command window
 	// as the program runs
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << projection[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "======" << std::endl;
-    
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			std::cout << projection[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "======" << std::endl;
+
 
 
 
@@ -286,69 +286,75 @@ void display(int windowWidth, int windowHeight)
 	//----------------------------------------------
 
 		//clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		
-		
-		
-		glm::mat4 view = camera.viewMat();
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 projection_alt = glm::perspective(camera.zoomfactor, (float)windowWidth / (float)windowHeight, 0.1f, 1000.0f);
 
-		model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
-		
-		
 
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  SKYBOX  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		envShader.Use();
 
-		//Grab locations of attributes
-		GLuint cubeMapPosition = glGetAttribLocation(envShader.Program, "cubeMapPosition");
-		glEnableVertexAttribArray(cubeMapPosition);
-		glVertexAttribPointer(cubeMapPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glm::mat4 view = camera.viewMat();
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 projection_alt = glm::perspective(camera.zoomfactor, (float)windowWidth / (float)windowHeight, 0.1f, 1000.0f);
 
-		//set skybox matrices
-		envShader.setMat4("projection", projection_alt);
-		envShader.setMat4("view", view);
-		envShader.setMat4("model", rotation);
-		
+	model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
 
-		//Set up textures
-		//glActiveTexture(GL_TEXTURE0);
-		glBindVertexArray(VAOs[Skybox]);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, Textures[SkyboxTexture]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		//glDepthMask(GL_LESS);
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		//Draw Teapot with shader class
-		//glDepthFunc(GL_LEQUAL);
-		refShader.Use();
 
-		//Grab locations of teapot attributes
-		GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
-		glEnableVertexAttribArray(vertex);
-		glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint normal = glGetAttribLocation(refShader.Program, "normal");
-		glEnableVertexAttribArray(normal);
-		glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
-		glEnableVertexAttribArray(cameraPosition);
-		glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		//set teapot matrices
-		view = camera.viewMat();
-		view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
-		model = glm::mat4(1.0f);
-		model = glm::translate(model,glm::vec3(0.0f,-0.5f,0.0f));
-		refShader.setMat4("projection", projection_alt);
-		refShader.setMat4("view", view*rotation);
-		refShader.setMat4("model", model);
-		refShader.setVec3("cameraPosition", camera.pos);
-		teapot.Draw(vertex, normal);
-		glBindVertexArray(0);
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  SKYBOX  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	envShader.Use();
 
-		glDepthMask(GL_LESS);
+	//Grab locations of attributes
+	GLuint cubeMapPosition = glGetAttribLocation(envShader.Program, "cubeMapPosition");
+	glEnableVertexAttribArray(cubeMapPosition);
+	glVertexAttribPointer(cubeMapPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//set skybox matrices
+	envShader.setMat4("projection", projection_alt);
+	envShader.setMat4("view", view);
+	envShader.setMat4("model", rotation);
+
+
+	//Set up textures
+	//glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(VAOs[Skybox]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, Textures[SkyboxTexture]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	//glDepthMask(GL_LESS);
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//Draw Teapot with shader class
+	//glDepthFunc(GL_LEQUAL);
+	refShader.Use();
+
+	//Grab locations of teapot attributes
+	GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
+	glEnableVertexAttribArray(vertex);
+	glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint normal = glGetAttribLocation(refShader.Program, "normal");
+	glEnableVertexAttribArray(normal);
+	glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
+	glEnableVertexAttribArray(cameraPosition);
+	glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint lightPosition = glGetAttribLocation(refShader.Program, "light_position");
+	glEnableVertexAttribArray(lightPosition);
+	glVertexAttribPointer(lightPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//set teapot matrices
+	view = camera.viewMat();
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, -1.5, 0.0f));
+	glm::vec3 light_position = glm::vec3(200.0f, 200.0f, -300.0f);
+	glm::vec3 camRot = glm::vec3(camX, 0.0, camZ);
+	refShader.setMat4("projection", projection_alt);
+	refShader.setMat4("view", view*rotation);
+	refShader.setMat4("model", model);
+	refShader.setVec3("cameraPosition", camera.pos);
+	refShader.setVec3("light_position", light_position);
+	teapot.Draw(vertex, normal);
+	glBindVertexArray(0);
+
+	glDepthMask(GL_LESS);
 
 	//----------------------------------------------
 }
@@ -366,85 +372,85 @@ void display(int windowWidth, int windowHeight)
 
 void KeyCallback(GLFWwindow *window, int key, int scan, int act, int mode)
 {
-    //escape with escape key
+	//escape with escape key
 	if (key == GLFW_KEY_ESCAPE && act == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
 
-    if (key == GLFW_KEY_UP && act == GLFW_PRESS)
-    {
+	if (key == GLFW_KEY_UP && act == GLFW_PRESS)
+	{
 
-    }
+	}
 
-    if (key == GLFW_KEY_DOWN && act == GLFW_PRESS)
-    {
+	if (key == GLFW_KEY_DOWN && act == GLFW_PRESS)
+	{
 
-    }
+	}
 
-    if (key == GLFW_KEY_LEFT && act == GLFW_PRESS)
-    {
+	if (key == GLFW_KEY_LEFT && act == GLFW_PRESS)
+	{
 
-    }
+	}
 
-    if (key == GLFW_KEY_RIGHT && act == GLFW_PRESS)
-    {
+	if (key == GLFW_KEY_RIGHT && act == GLFW_PRESS)
+	{
 
-    }
+	}
 
-    //updating keys table 
-    if (act == GLFW_PRESS)
-        keys[key] = true;
-    else if (act == GLFW_RELEASE)
-        keys[key] = false;
+	//updating keys table 
+	if (act == GLFW_PRESS)
+		keys[key] = true;
+	else if (act == GLFW_RELEASE)
+		keys[key] = false;
 
 }
 
 // controlling camera ad object orientation
 void MouseCallback(GLFWwindow *window, double xPosition, double yPosition)
 {
-    //first time being encountered
-    if (firstMouse)
-    {
-        lastX = xPosition;
-        lastY = yPosition;
-        firstMouse = false;
-    }
-    
-    //finding change
-    GLfloat deltaX = xPosition - lastX;
-    GLfloat deltaY = lastY - yPosition;
+	//first time being encountered
+	if (firstMouse)
+	{
+		lastX = xPosition;
+		lastY = yPosition;
+		firstMouse = false;
+	}
 
-    //updating last coords
-    lastX = xPosition;
-    lastY = yPosition;
+	//finding change
+	GLfloat deltaX = xPosition - lastX;
+	GLfloat deltaY = lastY - yPosition;
 
-    camera.mouseIn(deltaX, deltaY);
+	//updating last coords
+	lastX = xPosition;
+	lastY = yPosition;
+
+	camera.mouseIn(deltaX, deltaY);
 }
 
 // controlling camera movement
 void ScrollCallback(GLFWwindow *window, double deltaX, double deltaY)
 {
-    camera.mouseScroll(deltaY);
+	camera.mouseScroll(deltaY);
 }
 
 
 // controlling camera movement
 void KeyMovement()
 {
-    //simple forwards, backwards and strafe
-    //handled by camera object
-    if (keys[GLFW_KEY_W])
-        camera.keyIn(FORWARD, deltaTime);
-    if (keys[GLFW_KEY_S])
-        camera.keyIn(BACKWARD, deltaTime);
-    if (keys[GLFW_KEY_A])
-        camera.keyIn(LEFT, deltaTime);
-    if (keys[GLFW_KEY_D])
-        camera.keyIn(RIGHT, deltaTime);
-    if (keys[GLFW_KEY_SPACE])
-        camera.keyIn(UP, deltaTime);
-    if (keys[GLFW_KEY_LEFT_CONTROL])
-        camera.keyIn(DOWN, deltaTime);
+	//simple forwards, backwards and strafe
+	//handled by camera object
+	if (keys[GLFW_KEY_W])
+		camera.keyIn(FORWARD, deltaTime);
+	if (keys[GLFW_KEY_S])
+		camera.keyIn(BACKWARD, deltaTime);
+	if (keys[GLFW_KEY_A])
+		camera.keyIn(LEFT, deltaTime);
+	if (keys[GLFW_KEY_D])
+		camera.keyIn(RIGHT, deltaTime);
+	if (keys[GLFW_KEY_SPACE])
+		camera.keyIn(UP, deltaTime);
+	if (keys[GLFW_KEY_LEFT_CONTROL])
+		camera.keyIn(DOWN, deltaTime);
 }
 
 //=====================================================================
@@ -458,58 +464,58 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 	// 1. Call SOIL_load_OGL_cubemap (SOIL.c) with the images from data/images
 	//   you are provided with the St. Peter's cubemap images but you can also
 	//   use other examples from online or your own images.
-    // ---------------------------------------------------------------------
-		GLuint textureID;
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_CUBE_MAP);
-		glGenTextures(1, &textureID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	// ---------------------------------------------------------------------
+	GLuint textureID;
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_CUBE_MAP);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 
-		int width, height;
-		unsigned char* image;
+	int width, height;
+	unsigned char* image;
 
-		
-		std::vector<const GLchar *> faces;
-		faces.push_back("../../data/images/blood_posx.jpg");
-		faces.push_back("../../data/images/blood_negx.jpg");
-		faces.push_back("../../data/images/blood_posy.jpg");
-		faces.push_back("../../data/images/blood_negy.jpg");
-		faces.push_back("../../data/images/blood_posz.jpg");
-		faces.push_back("../../data/images/blood_negz.jpg");
-		/*
-		faces.push_back("../../data/images/posx.jpg");
-		faces.push_back("../../data/images/negx.jpg");
-		faces.push_back("../../data/images/posy.jpg");
-		faces.push_back("../../data/images/negy.jpg");
-		faces.push_back("../../data/images/posz.jpg");
-		faces.push_back("../../data/images/negz.jpg");*/
 
-		for (GLuint i = 0; i < faces.size();i++) {
-			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
-			if (image == 0) return textureId;
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-			SOIL_free_image_data(image);
-		}
-		
-		/*textureId = SOIL_load_OGL_cubemap(
-		posx,
-		negx,
-		posy,
-		negy,
-		posz,
-		negz,
-		0,
-		0,
-		SOIL_FLAG_MIPMAPS);*/
-		
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		return textureID;
+	std::vector<const GLchar *> faces;
+	/*faces.push_back("../../data/images/blood_posx.jpg");
+	faces.push_back("../../data/images/blood_negx.jpg");
+	faces.push_back("../../data/images/blood_posy.jpg");
+	faces.push_back("../../data/images/blood_negy.jpg");
+	faces.push_back("../../data/images/blood_posz.jpg");
+	faces.push_back("../../data/images/blood_negz.jpg");*/
+	
+	faces.push_back("../../data/images/posx.jpg");
+	faces.push_back("../../data/images/negx.jpg");
+	faces.push_back("../../data/images/posy.jpg");
+	faces.push_back("../../data/images/negy.jpg");
+	faces.push_back("../../data/images/posz.jpg");
+	faces.push_back("../../data/images/negz.jpg");
+
+	for (GLuint i = 0; i < faces.size(); i++) {
+		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
+		if (image == 0) return textureId;
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		SOIL_free_image_data(image);
+	}
+
+	/*textureId = SOIL_load_OGL_cubemap(
+	posx,
+	negx,
+	posy,
+	negy,
+	posz,
+	negz,
+	0,
+	0,
+	SOIL_FLAG_MIPMAPS);*/
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	return textureID;
 	// ---------------------------------------------------------------------
 
 }
@@ -660,7 +666,6 @@ int main()
 //https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330
 //https://open.gl/textures
 //https://stackoverflow.com/questions/15735837/textures-not-displaying-correctly-c-opengl-soil
-
 
 
 
