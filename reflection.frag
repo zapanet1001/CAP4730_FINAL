@@ -15,55 +15,202 @@ in vec3 norm_out;
 
 uniform samplerCube skybox;
 uniform vec3 cameraPosition;
+uniform vec3 light_position;
+
+uniform vec3 aveColor0;
+uniform vec3 aveColor1;
+uniform vec3 aveColor2;
+uniform vec3 aveColor3;
+uniform vec3 aveColor4;
+uniform vec3 aveColor5;
+uniform vec3 aveColor6;
+
+uniform vec3 shaderMode;
 
 out vec4 FragColor;
 
+
+//COLOR VALUES
+const vec3 ambientColor = vec3(0.70,0.2,0.10);
+const int levels = 7;
+const float scaleFactor = 1.0/levels;
+
+
 void main()
 {
-	//reflect ray around normal
-	vec3 incident_ray = normalize(cameraPosition-pos_out );
-	vec3 normal = normalize(norm_out);
 
-	//DETECT EDGE
-	//float edgeDetection = (dot(incident_ray,normal)>0.0) ? 1 : 0;
+	//VECTORS
+	vec3 normal = normalize(norm_out);
+	vec3 incident_ray = normalize(cameraPosition-pos_out );
+	vec3 light_ray = normalize(light_position-pos_out);
+	vec3 halfway = normalize(incident_ray + light_ray);
+	
+	
 
 	//REFLECTION COLOR
 	vec3 reflected_ray = reflect(incident_ray, normal);
 	vec3 reflect_Color =  texture(skybox, reflected_ray).rgb;
-	vec4 reflectionColor = vec4(reflect_Color,1.0);
+	float red_reflect =  floor(reflect_Color.r*levels) *scaleFactor;
+	float green_reflect =  floor(reflect_Color.g*levels) *scaleFactor;
+	float blue_reflect =  floor(reflect_Color.b*levels) *scaleFactor;
+	vec3 finalReflection = vec3(red_reflect,green_reflect,blue_reflect)+ambientColor ;
+	
 
-	//HANDLE INDEXED COLOR
-	float intensity = dot(reflected_ray, normal);
-	if(intensity>0.95)
-		reflectionColor = reflectionColor*1.0;
-	else if(intensity>0.5)
-		reflectionColor = reflectionColor*0.6;
-	else if(intensity>0.25)
-		reflectionColor = reflectionColor*0.4;
-	else
-		reflectionColor = reflectionColor*0.2;
 
-	//LIGHT
-	vec3 L = normalize(reflected_ray-pos_out);
-	vec3 H = normalize(L+incident_ray);
+
 
 	//DIFFUSE COLOR
-	float diffuse = max(0,dot(L,normal));
-	vec4 diffuse_color = vec4(0.8,0.6,0.2,1.0)*reflectionColor;
-	float diffuse_intensity = 0.4;
+	float diffuse = max(0,dot(light_ray,normal));
+	float diffuse_kd = 1.0;
+	float diffuseColor = diffuse_kd * floor(diffuse*levels)*scaleFactor;
+	
+	//RGB to HSL Math
+	float refRed = reflect_Color[0] / 255;
+	float refGreen = reflect_Color[1] / 255;
+	float refBlue = reflect_Color[2] / 255;
 
-	/*SPECULAR COLOR
-	float specularColor = 0.0;
-	if(dot(L,normal) >0.0)
-	{
-		specularColor
+	float maxRef = max(refRed, refGreen);
+	maxRef = max(maxRef, refBlue);
+
+	float minRef = min(refRed, refGreen); 
+	minRef = min(minRef, refBlue);
+
+	int hue;
+
+	if (maxRef == refRed){
+		hue = int(((refGreen - refBlue) / (maxRef - minRef)) * 60);
+	}
+	else if (maxRef == refGreen){
+		hue = int((2.0 + (refBlue - refRed) / (maxRef - minRef)) * 60);
+	}
+	else{
+		hue = int((4.0 + (refRed - refGreen) / (maxRef - minRef)) * 60);
 	}
 
-	//c4 specular_color = vec4(1.0,0.0,0.0,1.0)*reflectionColor; 
-	float specular_intensity = 0.38;*/
-	
-	 
+	if (hue < 0){
+		hue = hue + 360;}
 
-    FragColor  = diffuse_color*diffuse_intensity +  reflectionColor;
+	int tempDifference = 255;
+	int difference = 255;
+	vec3 foundHue;
+
+
+	if(abs(hue - (int(aveColor0[0]))) < tempDifference){
+		foundHue = aveColor0;
+		tempDifference = abs(hue - (int(aveColor0[0])));
+	}
+	if(abs(hue - (int(aveColor1[0]))) < tempDifference){
+		foundHue = aveColor1;
+		tempDifference = abs(hue - (int(aveColor1[0])));
+	}
+	if(abs(hue - (int(aveColor2[0]))) < tempDifference){
+		foundHue = aveColor2;
+		tempDifference = abs(hue - (int(aveColor2[0])));
+	}
+	if(abs(hue - (int(aveColor3[0]))) < tempDifference){
+		foundHue = aveColor3;
+		tempDifference = abs(hue - (int(aveColor3[0])));
+	}
+	if(abs(hue - (int(aveColor4[0]))) < tempDifference){
+		foundHue = aveColor4;
+		tempDifference = abs(hue - (int(aveColor4[0])));
+	}
+	if(abs(hue - (int(aveColor5[0]))) < tempDifference){
+		foundHue = aveColor5;
+		tempDifference = abs(hue - (int(aveColor5[0])));
+	}
+	if(abs(hue - (int(aveColor6[0]))) < tempDifference){
+		foundHue = aveColor6;
+		tempDifference = abs(hue - (int(aveColor6[0])));
+	}
+
+	//HSL to RGB Math
+	float temp1, temp2, tempR, tempG, tempB;
+	float H = foundHue[0]		;
+	float S = foundHue[1] / 100;
+	float L = foundHue[2] / 100;
+
+	float R, G, B;
+
+
+	if (L < 0.5){
+		temp1 = L * (1.0 + S);
+	}
+	else{
+		temp1 = L + S - L * S;
+	}
+	temp2 = 2 * L - temp1;
+
+	H = H / 360;
+
+	tempR = H + 0.333;
+	if (tempR > 1){
+		tempR = tempR - 1;}
+	tempG = H;
+	tempB = H - 0.333;
+	if (tempB < 0){
+		tempB = tempB + 1;}
+
+	//HSL to Red
+	if (tempR * 6 < 1){
+		R = (temp2 + (temp1 - temp2) * 6 * tempR) ;}
+	else if (tempR * 2 < 1){
+		R = temp1;}
+	else if (tempR * 3 < 2){
+		R = (temp2 + (temp1 - temp2) * (0.666 - tempR) * 6);}
+	else{
+		R = temp2;}
+
+	//HSL to Green
+	if (tempG * 6 < 1){
+		G = (temp2 + (temp1 - temp2) * 6 * tempG) ;}
+	else if (tempG * 2 < 1){
+		G = temp1 ;}
+	else if (tempG * 3 < 2){
+		G = (temp2 + (temp1 - temp2) * (0.666 - tempG) * 6) ;}
+	else{
+		G = temp2 ;}
+
+	//HSL to Blue
+	if (tempB * 6 < 1){
+		B = (temp2 + (temp1 - temp2) * 6 * tempB) ;}
+	else if (tempB * 2 < 1){
+		B = temp1 ;}
+	else if (tempB * 3 < 2){
+		B = (temp2 + (temp1 - temp2) * (0.666 - tempB) * 6) ;}
+	else{
+		B = temp2 ;}
+
+	//Assert new reflect color
+	if(shaderMode == vec3(0, 0, 0)){
+		//ambientColor = vec3(0.1, 0.1, 0.1);
+		finalReflection = vec3(R, G, B) + vec3(0.1, 0.1, 0.1);
+	}
+
+	//SPECULAR COLOR
+	float specularColor = 0.0;
+	float specular_ks = 0.50;
+	int material_shine = 10;
+	if(dot(light_ray,normal) >0.0)
+	{
+		specularColor = pow(max(0,dot(light_ray,reflect(-light_ray,normal))),material_shine);
+		//specularColor = pow(max(0,dot(halfway,normal)), material_shine ); 
+	}
+	float specularLimit=    (pow (dot(light_ray,reflect(-light_ray,normal) ),material_shine) > 0.4) ? 1 : 0 ;
+
+
+	//DETECT EDGE
+	float edgeDetection = (dot(light_ray,normal)>0.1)? 1 : 0;
+
+
+
+
+	//FINAL COLOR
+	float light = edgeDetection*(diffuseColor + specularColor*specularLimit);
+	vec3 color = vec3(light,light,light) * finalReflection  ;
+	color = color;
+
+    FragColor  = vec4(color,1.0);
+
 }
 //-----------------------------------------------------------------------

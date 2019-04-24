@@ -10,14 +10,16 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <SOIL.h>
+#include <jpeglib.h>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
-#include <AntTweakBar.h>
-#include <stdio.h>
+//#include <stdio.h>
+#include <corecrt_wstdio.h>
 #include "Shader.h"
 #include "Camera.h"
 #include "Geometry.h"
@@ -26,6 +28,30 @@
 #define BUFFER_OFFSET(a) ((void*)(a))
 
 
+//Average color vector
+glm::vec3 aveColor = glm::vec3(0, 0, 0);
+
+//Color Pallets in HSL
+glm::vec3 cathedralPallet[7] = { glm::vec3(247, 11, 91),
+								 glm::vec3(209, 34, 69),
+								 glm::vec3(40, 25, 65),
+								 glm::vec3(38, 50, 60),
+								 glm::vec3(29, 76, 48),
+								 glm::vec3(37, 51, 31),
+								 glm::vec3(34, 45, 24) };
+
+glm::vec3 bloodPallet[7] = { glm::vec3(6, 97, 53),
+								glm::vec3(247, 11, 91),
+								glm::vec3(240, 75, 5),
+								glm::vec3(351, 68, 50),
+								glm::vec3(14, 87, 100),
+								glm::vec3(0, 0, 0),
+								glm::vec3(0, 0, 0) };
+//int aveColor[4] = { 0,0,0,0 };
+
+//SHader mode
+glm::vec3 shaderSet = glm::vec3(0,0,0);
+
 //----------------------------------------------
 // Gemoetry (Teapot and Skybox)
 //----------------------------------------------
@@ -33,6 +59,7 @@
 enum VAO_IDs { Skybox, Teapot, NumVAOs };
 GLuint  VAOs[NumVAOs];
 Geometry teapot;
+Geometry teapot2;
 
 
 
@@ -146,7 +173,8 @@ void init()
 		//initialize the teapot
 		glGenVertexArrays(1, &VAOs[Teapot]);
 		teapot.Initialize("../../data/models/teapot.obj", VAOs[Teapot]);
-
+		teapot2.Initialize("../../data/models/teapot.obj", VAOs[Teapot]);
+		//teapot.Initialize("../../data/meshes/mySphereBackup.obj", VAOs[Teapot]);
 		
 
 
@@ -247,29 +275,15 @@ void display(int windowWidth, int windowHeight)
 
 	// Create  two shaders by initializing the 
 	// Shader obects with a path to shaders.
-    static Shader envShader("./Shaders/environment.vert", "./Shaders/environment.frag");
-    static Shader refShader("./Shaders/reflection.vert", "./Shaders/reflection.frag");
+	static Shader envShader("./Shaders/environment.vert", "./Shaders/environment.frag");
+	static Shader refShader("./Shaders/reflection.vert", "./Shaders/reflection.frag");
 
-    
+
+
 	// sets up the camera motion
-    float camX = cos(.1*glfwGetTime());
-    float camZ = sin(.1*glfwGetTime());
-    float ratio = (float)windowHeight/windowWidth;
-    
-	// sets up the camera projection matrices
-    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -ratio, ratio, -1.0f, 1.0f);
-    glm::mat4 rotation = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 1.0, 0.0));
-   
-	// prints camera projection matricies to the command window
-	// as the program runs
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << projection[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "======" << std::endl;
-    
+	float camX = cos(.1*glfwGetTime());
+	float camZ = sin(.1*glfwGetTime());
+	float ratio = (float)windowHeight / windowWidth;
 
 
 
@@ -288,73 +302,171 @@ void display(int windowWidth, int windowHeight)
 	//----------------------------------------------
 
 		//clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		
-		
-		
-		glm::mat4 view = camera.viewMat();
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 projection_alt = glm::perspective(camera.zoomfactor, (float)windowWidth / (float)windowHeight, 0.1f, 1000.0f);
+	// sets up the camera projection matrices
+	//glm::mat4 projection_alt = glm::ortho(0.1f, 1.0f, 0.1f, ratio, 0.1f, 1.0f);
+	glm::mat4 rotation = glm::lookAt(glm::vec3(0.0, 0.0, 0.0), glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 1.0, 0.0));
 
-		model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
-		
-		
 
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  SKYBOX  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		envShader.Use();
 
-		//Grab locations of attributes
-		GLuint cubeMapPosition = glGetAttribLocation(envShader.Program, "cubeMapPosition");
-		glEnableVertexAttribArray(cubeMapPosition);
-		glVertexAttribPointer(cubeMapPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glm::mat4 view = camera.viewMat();
+	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 projection_alt = glm::perspective(70.0f, ratio, 0.1f, 1000.0f); //first position should be camera.zoomFactor
 
-		//set skybox matrices
-		envShader.setMat4("projection", projection_alt);
-		envShader.setMat4("view", view);
-		envShader.setMat4("model", rotation);
-		
+	model = glm::scale(glm::mat4(1.0f), glm::vec3(500, 500, 500));
 
-		//Set up textures
-		//glActiveTexture(GL_TEXTURE0);
-		glBindVertexArray(VAOs[Skybox]);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, Textures[SkyboxTexture]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		//glDepthMask(GL_LESS);
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		//Draw Teapot with shader class
-		//glDepthFunc(GL_LEQUAL);
-		refShader.Use();
 
-		//Grab locations of teapot attributes
-		GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
-		glEnableVertexAttribArray(vertex);
-		glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint normal = glGetAttribLocation(refShader.Program, "normal");
-		glEnableVertexAttribArray(normal);
-		glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
-		glEnableVertexAttribArray(cameraPosition);
-		glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  SKYBOX  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	envShader.Use();
+
+	//Grab locations of attributes
+	GLuint cubeMapPosition = glGetAttribLocation(envShader.Program, "cubeMapPosition");
+	glEnableVertexAttribArray(cubeMapPosition);
+	glVertexAttribPointer(cubeMapPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//set skybox matrices
+	envShader.setMat4("projection", projection_alt); //alt
+	envShader.setMat4("view", view);
+	envShader.setMat4("model", rotation);
+
+
+	//Set up textures
+	//glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(VAOs[Skybox]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, Textures[SkyboxTexture]);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	//glDepthMask(GL_LESS);
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  TEAPOT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//Draw Teapot with shader class
+	//glDepthFunc(GL_LEQUAL);
+	refShader.Use();
+
+	//TODO: Set up loop for taking average colors of cubemap
+			//GLuint image1[4];
+			//glGetTexImage(Textures[SkyboxTexture], 0, GL_RGB, GL_INT, &imagedata);
+
+
+	//Grab locations of teapot attributes
+	GLuint vertex = glGetAttribLocation(refShader.Program, "vertex");
+	glEnableVertexAttribArray(vertex);
+	glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint normal = glGetAttribLocation(refShader.Program, "normal");
+	glEnableVertexAttribArray(normal);
+	glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint cameraPosition = glGetAttribLocation(refShader.Program, "cameraPosition");
+	glEnableVertexAttribArray(cameraPosition);
+	glVertexAttribPointer(cameraPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+	GLuint aveColor0 = glGetAttribLocation(refShader.Program, "aveColor0");
+	glEnableVertexAttribArray(aveColor0);
+	glVertexAttribPointer(aveColor0, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor1 = glGetAttribLocation(refShader.Program, "aveColor1");
+	glEnableVertexAttribArray(aveColor1);
+	glVertexAttribPointer(aveColor1, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor2 = glGetAttribLocation(refShader.Program, "aveColor2");
+	glEnableVertexAttribArray(aveColor2);
+	glVertexAttribPointer(aveColor2, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor3 = glGetAttribLocation(refShader.Program, "aveColor3");
+	glEnableVertexAttribArray(aveColor3);
+	glVertexAttribPointer(aveColor3, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor4 = glGetAttribLocation(refShader.Program, "aveColor4");
+	glEnableVertexAttribArray(aveColor4);
+	glVertexAttribPointer(aveColor4, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor5 = glGetAttribLocation(refShader.Program, "aveColor5");
+	glEnableVertexAttribArray(aveColor5);
+	glVertexAttribPointer(aveColor5, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint aveColor6 = glGetAttribLocation(refShader.Program, "aveColor6");
+	glEnableVertexAttribArray(aveColor6);
+	glVertexAttribPointer(aveColor6, 3, GL_INT, GL_FALSE, 0, 0);
+
+	GLuint shaderMode = glGetAttribLocation(refShader.Program, "shaderMode");
+	glEnableVertexAttribArray(shaderMode);
+	glVertexAttribPointer(shaderMode, 3, GL_INT, GL_FALSE, 0, 0);
+
+	//GLuint colorLoc = glGetUniformLocation(refShader.Program, "aveColor0");
+	//refShader.setVec3("aveColor0", cathedralPallet[0]);
+	//glProgramUniform4fv(refShader.Program, colorLoc, cathedralPallet[0])
+
+	//colorLoc = glGetUniformLocation(refShader.Program, "aveColor1");
+	//refShader.setVec3("aveColor1", cathedralPallet[1]);
+
+	/*
+	for (int i = 0; i < cathedralPallet->length(); i++) {
+		char integer_string[1] = { i };
+		char entry = i + 48;
+		sprintf(integer_string, "%d", entry);
+		std::string newName = "aveColor" + i;
+		const GLchar * test[] = { "a", "v", "e", "C", "o", "l", "o", "r", entry };
+		strcat(test, integer_string);
+
+		//char newChar = "aveColor";
+		GLuint colorLoc = glGetUniformLocation(refShader.Program, newChar);
+		refShader.setVec3(newName, cathedralPallet[i]);
+	}
+	*/
 
 		//set teapot matrices
 		view = camera.viewMat();
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		glm::vec3 teapotPositions[] = {
+			glm::vec3(0.0f, -1.5f, 0.0f),
+			glm::vec3(2.0f, 2.0f, 2.0f)
+		};
+		glm::vec3 light_position = glm::vec3(-200.0f, 200.0f, -300.0f);
+		refShader.setVec3("light_position", light_position);
+		//averageColor = glm::vec3(0, 0, 0);
+
 		
-		view = glm::translate(view, glm::vec3(0.0f,0.0f,-3.0f));
-		model = glm::mat4(1.0f);
-		model = glm::translate(model,glm::vec3(0.0f,-0.5f,0.0f));
-		refShader.setMat4("projection", projection_alt);
-		refShader.setMat4("view", view*rotation);
-		refShader.setMat4("model", model);
-		refShader.setVec3("cameraPosition", camera.pos);
-		teapot.Draw(vertex, normal);
+		
+		for (int i = 0; i < 2; i++) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, teapotPositions[i]);
+			float angle = 90.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			
+
+			refShader.setMat4("projection", projection_alt); //alt
+			refShader.setMat4("view", view*rotation); //makes the reflection of cubemap rotate with camera
+			refShader.setMat4("model", model);
+			refShader.setVec3("cameraPosition", camera.pos);
+
+			if (shaderSet == glm::vec3(0, 0, 0)) {
+				refShader.setVec3("aveColor0", cathedralPallet[0]);
+				refShader.setVec3("aveColor1", cathedralPallet[1]);
+				refShader.setVec3("aveColor2", cathedralPallet[2]);
+				refShader.setVec3("aveColor3", cathedralPallet[3]);
+				refShader.setVec3("aveColor4", cathedralPallet[4]);
+				refShader.setVec3("aveColor5", cathedralPallet[5]);
+				refShader.setVec3("aveColor6", cathedralPallet[6]);
+			}
+			else if (shaderSet == glm::vec3(1, 1, 1)) {
+				//refShader.setVec3("aveColor0", bloodPallet[0]);
+				//refShader.setVec3("aveColor1", bloodPallet[1]);
+			//	refShader.setVec3("aveColor2", bloodPallet[2]);
+				//refShader.setVec3("aveColor3", bloodPallet[3]);
+			//	refShader.setVec3("aveColor4", bloodPallet[4]);
+			//	refShader.setVec3("aveColor5", bloodPallet[5]);
+			//	refShader.setVec3("aveColor6", bloodPallet[6]);
+			}
+
+			refShader.setVec3("shaderMode", shaderSet);
+
+			teapot.Draw(vertex, normal);
+		}
+
 		glBindVertexArray(0);
 
 		glDepthMask(GL_LESS);
-
-		// AntTweak window spawning (should be done before swapping buffers)
-		//TwDraw();
 
 	//----------------------------------------------
 }
@@ -482,12 +594,28 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 
 		
 		std::vector<const GLchar *> faces;
-		faces.push_back("../../data/images/posx.jpg");
-		faces.push_back("../../data/images/negx.jpg");
-		faces.push_back("../../data/images/posy.jpg");
-		faces.push_back("../../data/images/negy.jpg");
-		faces.push_back("../../data/images/posz.jpg");
-		faces.push_back("../../data/images/negz.jpg");
+
+		if (shaderSet == glm::vec3(0, 0, 0)) {
+			faces.push_back("../../data/images/posx.jpg");
+			faces.push_back("../../data/images/negx.jpg");
+			faces.push_back("../../data/images/posy.jpg");
+			faces.push_back("../../data/images/negy.jpg");
+			faces.push_back("../../data/images/posz.jpg");
+			faces.push_back("../../data/images/negz.jpg");
+		
+		}
+		else if (shaderSet == glm::vec3(1, 1, 1)) {
+		
+			faces.push_back("../../data/images/blood_posx.jpg");
+			faces.push_back("../../data/images/blood_negx.jpg");
+			faces.push_back("../../data/images/blood_posy.jpg");
+			faces.push_back("../../data/images/blood_negy.jpg");
+			faces.push_back("../../data/images/blood_posz.jpg");
+			faces.push_back("../../data/images/blood_negz.jpg");
+		}
+
+		
+
 
 		for (GLuint i = 0; i < faces.size();i++) {
 			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
@@ -495,20 +623,29 @@ GLuint GenerateCubeMapTexture(GLuint textureId)
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			SOIL_free_image_data(image);
 		}
-		
-		/*textureId = SOIL_load_OGL_cubemap(
-		posx,
-		negx,
-		posy,
-		negy,
-		posz,
-		negz,
-		0,
-		0,
-		SOIL_FLAG_MIPMAPS);*/
-		
+
+		/*
+		FILE* posx = fopen("../../data/images/posx.jpg", "rb");
+		FILE* posy = fopen("../../data/images/posy.jpg", "rb");
+		FILE* posz = fopen("../../data/images/posz.jpg", "rb");
+		FILE* negx = fopen("../../data/images/negx.jpg", "rb");
+		FILE* negy = fopen("../../data/images/negy.jpg", "rb");
+		FILE* negz = fopen("../../data/images/negz.jpg", "rb");
+
+		struct jpeg_compress_struct compImagePosx;
+		jpeg_stdio_dest(&compImagePosx, posx);
+		compImagePosx.image_width = width;
+		compImagePosx.image_height = height;
+		compImagePosx.input_components = 3;
+		//compImagePosx.in_color_space = JCS_RBG;
+		//GLuint *imageData;
+		//glReadPixels(0, 0, width, height, GL_INT, GL_UNSIGNED_INT, imageData);
+		//glPixelStore
+		*/	
+
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		return textureID;
+
 	// ---------------------------------------------------------------------
 
 }
@@ -549,6 +686,8 @@ void SetSoilCapabilties(void)
 //----------------------------------------------------
 int main()
 {
+	//SET THE SHADER MODE
+	shaderSet = glm::vec3(1, 1, 1);
 
 	//instantiating the window
 	//---------------------------------------
@@ -559,7 +698,6 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 
 	// create the window
 	GLFWwindow* window = glfwCreateWindow(windowLength, windowHeight, "Environment Mapping", nullptr, nullptr);
@@ -606,39 +744,6 @@ int main()
 	SetSoilCapabilties();
 
 
-	//AntTweak initialization
-	TwInit(TW_OPENGL_CORE, NULL);
-	// TwWindowSize(windowLength,windowHeight);
-	TwWindowSize(500, 500);
-
-	//AntTweak ui maker
-	TwBar *myBar;
-	myBar = TwNewBar("SceneEditor");
-
-	//Test variables
-	unsigned char teapotColor[] = { 200, 200, 200, 255 };
-
-	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLUT and OpenGL.' "); // Message added to the help bar.
-	TwDefine(" SceneEditor position = '500, 100' ");
-	//TwDefine(" SceneEditor size='200 400' color='96 216 224' "); // change default tweak bar size and color
-
-	TwAddVarRW(myBar, "teapotColor", TW_TYPE_COLOR32, &teapotColor,
-		" label='Teapot color' alpha help='Color and transparency of the Teapot.' ");
-
-	//glfwSetWindowTitle(window, "AntTweakBar simple example using GLFW");
-
-	// Set GLFW event callbacks
-	// - Directly redirect GLFW mouse button events to AntTweakBar
-	//glfwSetMouseButtonCallback((GLFWmousebuttonfun)TwEventMouseButtonGLFW);
-	// - Directly redirect GLFW mouse position events to AntTweakBar
-	//glfwSetCursorPosCallback(window, (GLFWmouseposfun)TwEventMousePosGLFW);
-	// - Directly redirect GLFW mouse wheel events to AntTweakBar
-	//glfwSetMouseWheelCallback((GLFWmousewheelfun)TwEventMouseWheelGLFW);
-	// - Directly redirect GLFW key events to AntTweakBar
-	//glfwSetKeyCallback((GLFWkeyfun)TwEventKeyGLFW);
-	// - Directly redirect GLFW char events to AntTweakBar
-	//glfwSetCharCallback((GLFWcharfun)TwEventCharGLFW);
-
 	// Init OpenGL geometry and buffers
 	init();
 
@@ -655,9 +760,6 @@ int main()
 
 		// draw
 		display(widthBuff, heightBuff);
-
-		// draw the AntTweak window
-		TwDraw();
 
 		// swap buffers
 		glfwSwapBuffers(window);
@@ -681,9 +783,6 @@ int main()
 	// end process
 	glfwTerminate();
 
-	// terminate AntTweaker
-	TwTerminate();
-
 	// return
 	return 0;
 }
@@ -698,11 +797,5 @@ int main()
 //https://gamedev.stackexchange.com/questions/60313/implementing-a-skybox-with-glsl-version-330
 //https://open.gl/textures
 //https://stackoverflow.com/questions/15735837/textures-not-displaying-correctly-c-opengl-soil
-
-
-
-
-
-
-
-
+//https://learnopengl.com/Getting-started/Coordinate-Systems
+//https://learnopengl.com/Getting-started/Shaders
