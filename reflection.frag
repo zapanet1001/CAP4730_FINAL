@@ -74,7 +74,7 @@ void main()
 
 
 	//FINAL COLOR
-	float light = edgeDetection*(diffuseColor + specularColor*specularLimit);
+	float light = ( diffuseColor + specularColor*specularLimit);
 	vec3 color = vec3(light,light,light) * finalReflection  ;
 	color = color;
 
